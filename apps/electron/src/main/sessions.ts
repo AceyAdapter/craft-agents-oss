@@ -40,6 +40,8 @@ import {
 import { loadWorkspaceSources, loadAllSources, getSourcesBySlugs, type LoadedSource, type McpServerConfig, getSourcesNeedingAuth, getSourceCredentialManager, getSourceServerBuilder, type SourceWithCredential, isApiOAuthProvider, SERVER_BUILD_ERRORS } from '@craft-agent/shared/sources'
 import { ConfigWatcher, type ConfigWatcherCallbacks } from '@craft-agent/shared/config'
 import { getAuthState } from '@craft-agent/shared/auth'
+import { fetchClaudeUsage } from '@craft-agent/shared/auth/claude-usage'
+import type { UsageSnapshot, SessionUsageDelta } from '@craft-agent/shared/sessions/types'
 import { setAnthropicOptionsEnv, setPathToClaudeCodeExecutable, setInterceptorPath, setExecutable } from '@craft-agent/shared/agent'
 import { getCredentialManager } from '@craft-agent/shared/credentials'
 import { CraftMcpClient } from '@craft-agent/shared/mcp'
@@ -294,6 +296,8 @@ interface ManagedSession {
     cacheCreationTokens?: number
     /** Model's context window size in tokens (from SDK modelUsage) */
     contextWindow?: number
+    /** Subscription usage consumed by this session */
+    usageDelta?: SessionUsageDelta
   }
   // Todo state (user-controlled) - determines open vs closed
   // Dynamic status ID referencing workspace status config
@@ -366,6 +370,9 @@ interface ManagedSession {
   authRetryInProgress?: boolean
   // Whether this session is hidden from session list (e.g., mini edit sessions)
   hidden?: boolean
+  // Subscription usage snapshot at start of current processing turn
+  // Used to calculate usage delta when processing completes
+  startUsageSnapshot?: UsageSnapshot
 }
 
 // Convert runtime Message to StoredMessage for persistence
@@ -770,6 +777,37 @@ export class SessionManager {
     } catch (error) {
       sessionLog.error('Failed to reinitialize auth:', error)
       throw error
+    }
+  }
+
+  /**
+   * Fetch current subscription usage for OAuth users.
+   * Returns a UsageSnapshot or undefined if not available (API key users).
+   */
+  private async fetchSubscriptionUsage(): Promise<UsageSnapshot | undefined> {
+    try {
+      const authState = await getAuthState()
+      const { billing } = authState
+
+      // Only fetch for OAuth users (subscription)
+      if (billing.type !== 'oauth_token' || !billing.claudeOAuthToken) {
+        return undefined
+      }
+
+      const usage = await fetchClaudeUsage(billing.claudeOAuthToken)
+      if (!usage) {
+        return undefined
+      }
+
+      return {
+        fiveHourUtilization: usage.fiveHour.utilization,
+        sevenDayUtilization: usage.sevenDay.utilization,
+        sevenDayOpusUtilization: usage.sevenDayOpus?.utilization,
+        timestamp: Date.now(),
+      }
+    } catch (error) {
+      sessionLog.warn('Failed to fetch subscription usage:', error)
+      return undefined
     }
   }
 
@@ -2587,6 +2625,17 @@ export class SessionManager {
       // in the rawText, and canUseTool in craft-agent.ts provides a fallback
       // to qualify short names. No transformation needed here.
 
+      // Snapshot subscription usage before processing (for delta calculation)
+      // This is async but non-blocking - we don't await to avoid delaying the chat
+      this.fetchSubscriptionUsage().then(snapshot => {
+        if (snapshot) {
+          managed.startUsageSnapshot = snapshot
+          sessionLog.info(`Captured start usage snapshot: 5h=${snapshot.fiveHourUtilization}%, 7d=${snapshot.sevenDayUtilization}%`)
+        }
+      }).catch(() => {
+        // Ignore errors - usage tracking is best-effort
+      })
+
       sendSpan.mark('chat.starting')
       const chatIterator = agent.chat(message, attachments)
       sessionLog.info('Got chat iterator, starting iteration...')
@@ -2782,6 +2831,49 @@ export class SessionManager {
 
     // 1. Cleanup state
     managed.isProcessing = false
+
+    // 1.5 Calculate subscription usage delta (if we have a start snapshot)
+    if (managed.startUsageSnapshot && reason === 'complete') {
+      try {
+        const endUsage = await this.fetchSubscriptionUsage()
+        if (endUsage) {
+          const newDelta: SessionUsageDelta = {
+            fiveHourDelta: Math.max(0, endUsage.fiveHourUtilization - managed.startUsageSnapshot.fiveHourUtilization),
+            sevenDayDelta: Math.max(0, endUsage.sevenDayUtilization - managed.startUsageSnapshot.sevenDayUtilization),
+            sevenDayOpusDelta: endUsage.sevenDayOpusUtilization !== undefined && managed.startUsageSnapshot.sevenDayOpusUtilization !== undefined
+              ? Math.max(0, endUsage.sevenDayOpusUtilization - managed.startUsageSnapshot.sevenDayOpusUtilization)
+              : undefined,
+          }
+
+          // Accumulate deltas across turns (sessions can have multiple back-and-forth messages)
+          const existingDelta = managed.tokenUsage?.usageDelta
+          const accumulatedDelta: SessionUsageDelta = {
+            fiveHourDelta: (existingDelta?.fiveHourDelta ?? 0) + newDelta.fiveHourDelta,
+            sevenDayDelta: (existingDelta?.sevenDayDelta ?? 0) + newDelta.sevenDayDelta,
+            sevenDayOpusDelta: newDelta.sevenDayOpusDelta !== undefined
+              ? (existingDelta?.sevenDayOpusDelta ?? 0) + newDelta.sevenDayOpusDelta
+              : existingDelta?.sevenDayOpusDelta,
+          }
+
+          // Update tokenUsage with accumulated delta
+          managed.tokenUsage = {
+            ...managed.tokenUsage,
+            inputTokens: managed.tokenUsage?.inputTokens ?? 0,
+            outputTokens: managed.tokenUsage?.outputTokens ?? 0,
+            totalTokens: managed.tokenUsage?.totalTokens ?? 0,
+            contextTokens: managed.tokenUsage?.contextTokens ?? 0,
+            costUsd: managed.tokenUsage?.costUsd ?? 0,
+            usageDelta: accumulatedDelta,
+          }
+
+          sessionLog.info(`Usage delta for session ${sessionId}: 5h=+${newDelta.fiveHourDelta.toFixed(2)}%, 7d=+${newDelta.sevenDayDelta.toFixed(2)}% (accumulated: 5h=${accumulatedDelta.fiveHourDelta.toFixed(2)}%, 7d=${accumulatedDelta.sevenDayDelta.toFixed(2)}%)`)
+        }
+      } catch (error) {
+        sessionLog.warn('Failed to calculate usage delta:', error)
+      }
+      // Clear the start snapshot
+      managed.startUsageSnapshot = undefined
+    }
 
     // 2. Handle unread state based on whether user is viewing this session
     //    This is the explicit state machine for NEW badge:

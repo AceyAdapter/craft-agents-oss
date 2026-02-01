@@ -91,8 +91,18 @@ function UsageBar({ label, utilization, resetsAt, tooltip }: UsageBarProps) {
             </div>
 
             {/* Percentage */}
-            <span className={cn('text-[11px] w-8 text-right tabular-nums', textColorClass)}>
+            <span className={cn('text-[11px] text-right tabular-nums shrink-0 w-8', textColorClass)}>
               {Math.round(utilization)}%
+            </span>
+
+            {/* Separator */}
+            <span className="text-[11px] text-foreground/40 shrink-0 w-3 text-center">
+              {timeUntilReset ? '·' : ''}
+            </span>
+
+            {/* Reset time */}
+            <span className="text-[11px] text-foreground/40 tabular-nums shrink-0 w-12 text-left">
+              {timeUntilReset || ''}
             </span>
           </div>
         </TooltipTrigger>

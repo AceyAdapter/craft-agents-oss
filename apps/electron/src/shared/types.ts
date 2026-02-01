@@ -364,6 +364,12 @@ export interface Session {
     cacheCreationTokens?: number
     /** Model's context window size in tokens (from SDK modelUsage) */
     contextWindow?: number
+    /** Subscription usage consumed by this session */
+    usageDelta?: {
+      fiveHourDelta: number
+      sevenDayDelta: number
+      sevenDayOpusDelta?: number
+    }
   }
   /** When true, session is hidden from session list (e.g., mini edit sessions) */
   hidden?: boolean
@@ -1182,6 +1188,15 @@ export interface SkillsNavigationState {
 }
 
 /**
+ * Analytics navigation state - shows AnalyticsPanel for subscription usage tracking
+ */
+export interface AnalyticsNavigationState {
+  navigator: 'analytics'
+  /** Optional right sidebar panel state */
+  rightSidebar?: RightSidebarPanel
+}
+
+/**
  * Unified navigation state - single source of truth for all 3 panels
  *
  * From this state we can derive:
@@ -1194,6 +1209,7 @@ export type NavigationState =
   | SourcesNavigationState
   | SettingsNavigationState
   | SkillsNavigationState
+  | AnalyticsNavigationState
 
 /**
  * Type guard to check if state is chats navigation
@@ -1224,6 +1240,13 @@ export const isSkillsNavigation = (
 ): state is SkillsNavigationState => state.navigator === 'skills'
 
 /**
+ * Type guard to check if state is analytics navigation
+ */
+export const isAnalyticsNavigation = (
+  state: NavigationState
+): state is AnalyticsNavigationState => state.navigator === 'analytics'
+
+/**
  * Default navigation state - allChats with no selection
  */
 export const DEFAULT_NAVIGATION_STATE: NavigationState = {
@@ -1250,6 +1273,9 @@ export const getNavigationStateKey = (state: NavigationState): string => {
   }
   if (state.navigator === 'settings') {
     return `settings:${state.subpage}`
+  }
+  if (state.navigator === 'analytics') {
+    return 'analytics'
   }
   // Chats
   const f = state.filter
@@ -1297,6 +1323,9 @@ export const parseNavigationStateKey = (key: string): NavigationState | null => 
       return { navigator: 'settings', subpage }
     }
   }
+
+  // Handle analytics
+  if (key === 'analytics') return { navigator: 'analytics' }
 
   // Handle chats - parse filter and optional session
   const parseChatsKey = (filterKey: string, sessionId?: string): NavigationState | null => {

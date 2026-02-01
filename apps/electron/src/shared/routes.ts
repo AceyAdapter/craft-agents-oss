@@ -155,6 +155,9 @@ export const routes = {
       subpage && subpage !== 'app'
         ? `settings/${subpage}` as const
         : 'settings' as const,
+
+    /** Analytics view (shows subscription usage statistics) */
+    analytics: () => 'analytics' as const,
   },
 } as const
 

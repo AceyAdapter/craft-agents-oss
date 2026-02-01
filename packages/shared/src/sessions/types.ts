@@ -29,6 +29,25 @@ export type TodoState = string;
 export type BuiltInStatusId = 'todo' | 'in-progress' | 'needs-review' | 'done' | 'cancelled';
 
 /**
+ * Subscription usage snapshot at a point in time
+ */
+export interface UsageSnapshot {
+  fiveHourUtilization: number; // 0-100
+  sevenDayUtilization: number; // 0-100
+  sevenDayOpusUtilization?: number; // 0-100 (if on Max plan)
+  timestamp: number;
+}
+
+/**
+ * Usage delta for a session (subscription usage consumed)
+ */
+export interface SessionUsageDelta {
+  fiveHourDelta: number; // Percentage points consumed (e.g., 2.5 means +2.5%)
+  sevenDayDelta: number; // Percentage points consumed
+  sevenDayOpusDelta?: number;
+}
+
+/**
  * Session token usage tracking
  */
 export interface SessionTokenUsage {
@@ -41,6 +60,8 @@ export interface SessionTokenUsage {
   cacheCreationTokens?: number;
   /** Model's context window size in tokens (from SDK modelUsage) */
   contextWindow?: number;
+  /** Subscription usage consumed by this session */
+  usageDelta?: SessionUsageDelta;
 }
 
 /**

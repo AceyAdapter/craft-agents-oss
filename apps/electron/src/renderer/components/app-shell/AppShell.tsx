@@ -24,6 +24,7 @@ import {
   FolderOpen,
   HelpCircle,
   ExternalLink,
+  BarChart3,
 } from "lucide-react"
 import { PanelRightRounded } from "../icons/PanelRightRounded"
 import { PanelLeftRounded } from "../icons/PanelLeftRounded"
@@ -102,6 +103,7 @@ import {
   isSourcesNavigation,
   isSettingsNavigation,
   isSkillsNavigation,
+  isAnalyticsNavigation,
   type NavigationState,
   type ChatFilter,
 } from "@/contexts/NavigationContext"
@@ -112,6 +114,7 @@ import { PanelHeader } from "./PanelHeader"
 import { EditPopover, getEditConfig, type EditContextKey } from "@/components/ui/EditPopover"
 import { getDocUrl } from "@craft-agent/shared/docs/doc-links"
 import SettingsNavigator from "@/pages/settings/SettingsNavigator"
+import { AnalyticsPanel } from "@/pages/analytics"
 import { RightSidebar } from "./RightSidebar"
 import type { RichTextInputHandle } from "@/components/ui/rich-text-input"
 import { hasOpenOverlay } from "@/lib/overlay-detection"
@@ -1445,6 +1448,11 @@ function AppShellContent({
     navigate(routes.view.settings(subpage))
   }, [])
 
+  // Handler for analytics view
+  const handleAnalyticsClick = useCallback(() => {
+    navigate(routes.view.analytics())
+  }, [])
+
   // ============================================================================
   // EDIT POPOVER STATE
   // ============================================================================
@@ -2084,6 +2092,14 @@ function AppShellContent({
                     },
                     // --- Separator ---
                     { id: "separator:skills-settings", type: "separator" },
+                    // --- Analytics ---
+                    {
+                      id: "nav:analytics",
+                      title: "Analytics",
+                      icon: BarChart3,
+                      variant: isAnalyticsNavigation(navState) ? "default" : "ghost",
+                      onClick: handleAnalyticsClick,
+                    },
                     // --- Settings ---
                     {
                       id: "nav:settings",
@@ -2801,6 +2817,10 @@ function AppShellContent({
                 selectedSubpage={navState.subpage}
                 onSelectSubpage={(subpage) => handleSettingsClick(subpage)}
               />
+            )}
+            {isAnalyticsNavigation(navState) && (
+              /* Analytics Panel */
+              <AnalyticsPanel />
             )}
             {isChatsNavigation(navState) && (
               /* Sessions List */

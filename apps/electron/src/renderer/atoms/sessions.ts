@@ -61,6 +61,12 @@ export interface SessionMeta {
     totalTokens: number
     costUsd: number
     contextTokens: number
+    /** Subscription usage consumed by this session */
+    usageDelta?: {
+      fiveHourDelta: number
+      sevenDayDelta: number
+      sevenDayOpusDelta?: number
+    }
   }
   /** When the session was created (ms timestamp) */
   createdAt?: number
