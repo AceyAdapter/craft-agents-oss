@@ -173,6 +173,9 @@ const api: ElectronAPI = {
   testApiConnection: (apiKey: string, baseUrl?: string, modelName?: string) =>
     ipcRenderer.invoke(IPC_CHANNELS.SETTINGS_TEST_API_CONNECTION, apiKey, baseUrl, modelName),
 
+  // Claude subscription usage (OAuth only)
+  getClaudeUsage: () => ipcRenderer.invoke(IPC_CHANNELS.GET_CLAUDE_USAGE),
+
   // Settings - Model (global default)
   getModel: () => ipcRenderer.invoke(IPC_CHANNELS.SETTINGS_GET_MODEL),
   setModel: (model: string) => ipcRenderer.invoke(IPC_CHANNELS.SETTINGS_SET_MODEL, model),

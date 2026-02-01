@@ -3,6 +3,7 @@ export * from './callback-server.ts';
 export * from './claude-oauth.ts';
 export * from './claude-oauth-config.ts';
 export * from './claude-token.ts';
+export * from './claude-usage.ts';
 export * from './google-oauth.ts';
 export * from './slack-oauth.ts';
 export * from './microsoft-oauth.ts';

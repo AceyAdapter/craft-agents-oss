@@ -164,6 +164,8 @@ export default function AppearanceSettingsPage() {
                     <SettingsMenuSelect
                       value={colorTheme}
                       onValueChange={setColorTheme}
+                      searchable
+                      searchPlaceholder="Search themes..."
                       options={[
                         { value: 'default', label: 'Default' },
                         ...presetThemes

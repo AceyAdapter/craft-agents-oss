@@ -609,6 +609,9 @@ export const IPC_CHANNELS = {
   SETTINGS_UPDATE_API_SETUP: 'settings:updateApiSetup',
   SETTINGS_TEST_API_CONNECTION: 'settings:testApiConnection',
 
+  // Claude subscription usage (OAuth only)
+  GET_CLAUDE_USAGE: 'usage:getClaude',
+
   // Settings - Model
   SETTINGS_GET_MODEL: 'settings:getModel',
   SETTINGS_SET_MODEL: 'settings:setModel',
@@ -869,6 +872,9 @@ export interface ElectronAPI {
   getApiSetup(): Promise<ApiSetupInfo>
   updateApiSetup(authType: AuthType, credential?: string, anthropicBaseUrl?: string | null, customModel?: string | null): Promise<void>
   testApiConnection(apiKey: string, baseUrl?: string, modelName?: string): Promise<{ success: boolean; error?: string; modelCount?: number }>
+
+  // Claude subscription usage (OAuth only)
+  getClaudeUsage(): Promise<import('@craft-agent/shared/auth').ClaudeUsageData | null>
 
   // Settings - Model (global default)
   getModel(): Promise<string | null>

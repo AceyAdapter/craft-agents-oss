@@ -1387,6 +1387,36 @@ export function registerIpcHandlers(sessionManager: SessionManager, windowManage
   })
 
   // ============================================================
+  // Claude Subscription Usage (OAuth only)
+  // ============================================================
+
+  // Get Claude subscription usage (5-hour window and weekly limits)
+  ipcMain.handle(IPC_CHANNELS.GET_CLAUDE_USAGE, async () => {
+    const authType = getAuthType()
+
+    // Only available for OAuth subscription users
+    if (authType !== 'oauth_token') {
+      return null
+    }
+
+    const manager = getCredentialManager()
+    const oauthCreds = await manager.getClaudeOAuth()
+
+    if (!oauthCreds) {
+      return null
+    }
+
+    try {
+      const { fetchClaudeUsage } = await import('@craft-agent/shared/auth')
+      const usage = await fetchClaudeUsage(oauthCreds)
+      return usage
+    } catch (error) {
+      ipcLog.error('Failed to fetch Claude usage:', error)
+      return null
+    }
+  })
+
+  // ============================================================
   // Settings - Model (Global Default)
   // ============================================================
 

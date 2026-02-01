@@ -64,6 +64,7 @@ import {
   springTransition as collapsibleSpring,
 } from "@/components/ui/collapsible"
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher"
+import { UsagePanel } from "./UsagePanel"
 import { SessionList } from "./SessionList"
 import { MainContentPanel } from "./MainContentPanel"
 import type { ChatDisplayHandle } from "./ChatDisplay"
@@ -2099,6 +2100,9 @@ function AppShellContent({
                 <div className="flex-1 min-h-[40px] titlebar-drag-region" />
                 </div>
               </div>
+
+              {/* Usage Panel: Claude subscription usage (OAuth only) */}
+              <UsagePanel className="shrink-0 border-t border-foreground/5" />
 
               {/* Sidebar Bottom Section: WorkspaceSwitcher + Help icon */}
               <div className="mt-auto shrink-0 py-2 px-2">
