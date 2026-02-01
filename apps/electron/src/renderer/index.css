@@ -589,6 +589,18 @@ html[data-font="inter"] {
   app-region: no-drag;
 }
 
+/* Ensure all interactive overlay elements (dropdowns, popovers, etc.) are not draggable */
+[data-radix-popper-content-wrapper],
+[data-radix-menu-content],
+[data-radix-dropdown-menu-content],
+[data-radix-context-menu-content],
+[data-radix-popover-content],
+[data-radix-tooltip-content],
+[data-radix-select-content] {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
 /* =============================================================================
    SCENIC MODE - GLASS PANEL EFFECTS
 

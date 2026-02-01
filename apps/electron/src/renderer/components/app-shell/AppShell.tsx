@@ -1935,7 +1935,7 @@ function AppShellContent({
                 </div>
                 {/* Primary Nav: All Chats, Flagged, States, Labels | Sources, Skills | Settings */}
                 {/* pb-4 provides clearance so the last item scrolls above the mask-fade-bottom gradient */}
-                <div className="flex-1 overflow-y-auto min-h-0 mask-fade-bottom pb-4">
+                <div className="flex-1 flex flex-col overflow-y-auto min-h-0 mask-fade-bottom pb-4">
                 <LeftSidebar
                   isCollapsed={false}
                   getItemProps={getSidebarItemProps}
@@ -2095,6 +2095,8 @@ function AppShellContent({
                 />
                 {/* Agent Tree: Hierarchical list of agents */}
                 {/* Agents section removed */}
+                {/* Draggable spacer - fills empty space below navigation for window dragging */}
+                <div className="flex-1 min-h-[40px] titlebar-drag-region" />
                 </div>
               </div>
 
