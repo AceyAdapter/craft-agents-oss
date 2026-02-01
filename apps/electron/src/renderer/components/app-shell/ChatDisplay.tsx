@@ -39,6 +39,7 @@ import {
 } from "@craft-agent/ui"
 import { useFocusZone } from "@/hooks/keyboard"
 import { useTheme } from "@/hooks/useTheme"
+import { useNavigation, routes } from "@/contexts/NavigationContext"
 import type { Session, Message, FileAttachment, StoredAttachment, PermissionRequest, CredentialRequest, CredentialResponse, LoadedSource, LoadedSkill } from "../../../shared/types"
 import type { PermissionMode } from "@craft-agent/shared/agent/modes"
 import type { ThinkingLevel } from "@craft-agent/shared/agent/thinking-levels"
@@ -440,6 +441,9 @@ export const ChatDisplay = React.forwardRef<ChatDisplayHandle, ChatDisplayProps>
   // Get isDark from useTheme hook for overlay theme
   // This accounts for scenic themes (like Haze) that force dark mode
   const { isDark } = useTheme()
+
+  // Navigation for accepted plan links
+  const { navigate } = useNavigation()
 
   // Register as focus zone - when zone gains focus, focus the textarea
   const { zoneRef, isFocused } = useFocusZone({
@@ -1394,18 +1398,26 @@ export const ChatDisplay = React.forwardRef<ChatDisplayHandle, ChatDisplayProps>
                             detail: { text: 'Plan approved, please execute.', sessionId: session?.id }
                           }))
                         }}
-                        onAcceptPlanWithCompact={() => {
+                        onAcceptPlanInNewChat={() => {
                           // Find the most recent plan message to get its path
-                          // After compaction, Claude needs to know which plan file to read
                           const planMessage = session?.messages.findLast(m => m.role === 'plan')
                           const planPath = planMessage?.planPath
 
-                          // Dispatch event to compact conversation first, then execute plan
-                          // FreeFormInput handles this by sending /compact, waiting for completion,
-                          // then sending a message with the plan path for Claude to read and execute
-                          window.dispatchEvent(new CustomEvent('craft:approve-plan-with-compact', {
-                            detail: { sessionId: session?.id, planPath }
+                          // Dispatch event to create a new session with the plan
+                          // FreeFormInput handles this by creating a new session,
+                          // navigating to it, and sending a message to read and execute the plan
+                          window.dispatchEvent(new CustomEvent('craft:approve-plan-new-chat', {
+                            detail: {
+                              sessionId: session?.id,
+                              planPath,
+                              workingDirectory: session?.workingDirectory,
+                              permissionMode: session?.permissionMode,
+                            }
                           }))
+                        }}
+                        onNavigateToSession={(sessionId) => {
+                          // Navigate to the linked session
+                          navigate(routes.view.allChats(sessionId))
                         }}
                         onPopOut={(text) => {
                           // Open raw markdown source in code viewer

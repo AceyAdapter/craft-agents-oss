@@ -7,7 +7,7 @@
  */
 
 import * as React from 'react'
-import { useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { useAtomValue } from 'jotai'
 import { BarChart3, Clock, Calendar, Zap, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -16,7 +16,7 @@ import { sessionMetaMapAtom, type SessionMeta } from '@/atoms/sessions'
 import { PanelHeader } from '@/components/app-shell/PanelHeader'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@craft-agent/ui'
-import { navigate, routes } from '@/lib/navigate'
+import { useNavigation, useNavigationState, routes, isAnalyticsNavigation } from '@/contexts/NavigationContext'
 
 /**
  * Format time until reset as human-readable string
@@ -156,18 +156,20 @@ function UsageBar({ label, utilization, resetsAt, tooltip }: UsageBarProps) {
 
 interface SessionRowProps {
   session: SessionMeta
+  isSelected?: boolean
   onClick?: () => void
 }
 
-function SessionRow({ session, onClick }: SessionRowProps) {
+function SessionRow({ session, isSelected, onClick }: SessionRowProps) {
   const delta = session.tokenUsage?.usageDelta
   const hasUsageData = delta && (delta.fiveHourDelta > 0 || delta.sevenDayDelta > 0)
 
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-3 py-2 rounded-md hover:bg-foreground/5 transition-colors',
-        onClick && 'cursor-pointer'
+        'flex items-center gap-3 px-3 py-2 rounded-md transition-colors',
+        onClick && 'cursor-pointer',
+        isSelected ? 'bg-accent/10' : 'hover:bg-foreground/5'
       )}
       onClick={onClick}
     >
@@ -201,6 +203,13 @@ function SessionRow({ session, onClick }: SessionRowProps) {
 export function AnalyticsPanel() {
   const { usage, isLoading, isAvailable } = useClaudeUsage()
   const sessionMetaMap = useAtomValue(sessionMetaMapAtom)
+  const { navigate } = useNavigation()
+  const navState = useNavigationState()
+
+  // Get selected session ID from navigation state
+  const selectedSessionId = isAnalyticsNavigation(navState) && navState.details
+    ? navState.details.sessionId
+    : null
 
   // Compute aggregated statistics
   const stats = useMemo(() => {
@@ -337,7 +346,12 @@ export function AnalyticsPanel() {
                     <SessionRow
                       key={session.id}
                       session={session}
-                      onClick={() => navigate(routes.view.allChats(session.id))}
+                      isSelected={session.id === selectedSessionId}
+                      onClick={() => navigate(
+                        session.id === selectedSessionId
+                          ? routes.view.analytics()
+                          : routes.view.analytics(session.id)
+                      )}
                     />
                   ))}
                 </div>

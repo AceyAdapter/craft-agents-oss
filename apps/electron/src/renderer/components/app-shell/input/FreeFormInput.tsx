@@ -65,6 +65,7 @@ import { type ThinkingLevel, THINKING_LEVELS, getThinkingLevelName } from '@craf
 import { useEscapeInterrupt } from '@/context/EscapeInterruptContext'
 import { hasOpenOverlay } from '@/lib/overlay-detection'
 import { EscapeInterruptOverlay } from './EscapeInterruptOverlay'
+import { navigate, routes } from '@/lib/navigate'
 
 /**
  * Format token count for display (e.g., 1500 -> "1.5k", 200000 -> "200k")
@@ -424,112 +425,44 @@ export function FreeFormInput({
     return () => window.removeEventListener('craft:approve-plan', handleApprovePlan as EventListener)
   }, [sessionId, permissionMode, onPermissionModeChange, onSubmit])
 
-  // Listen for craft:approve-plan-with-compact events (Accept & Compact option)
-  // This compacts the conversation first, then executes the plan.
-  // The pending state is persisted to survive page reloads (CMD+R).
+  // Listen for craft:approve-plan-new-chat events (Accept in New Chat option)
+  // This creates a new session with the plan and sends the execution message.
   React.useEffect(() => {
-    const handleApprovePlanWithCompact = async (e: CustomEvent<{ sessionId?: string; planPath?: string }>) => {
+    const handleApprovePlanNewChat = (e: CustomEvent<{
+      sessionId?: string
+      planPath?: string
+      workingDirectory?: string
+      permissionMode?: PermissionMode
+    }>) => {
       // Only handle if this event is for our session
       if (e.detail?.sessionId && e.detail.sessionId !== sessionId) {
         return
       }
 
-      const planPath = e.detail?.planPath
+      const { planPath, workingDirectory, permissionMode } = e.detail
 
-      // Switch to allow-all (Auto) mode if in Explore mode
-      if (permissionMode === 'safe') {
-        onPermissionModeChange?.('allow-all')
+      if (!planPath) {
+        console.warn('[FreeFormInput] Accept in New Chat: No plan path provided')
+        return
       }
 
-      // Persist the pending plan execution state BEFORE sending /compact.
-      // This allows reload recovery if CMD+R happens during compaction.
-      if (planPath && sessionId) {
-        await window.electronAPI.sessionCommand(sessionId, {
-          type: 'setPendingPlanExecution',
-          planPath,
-        })
-      }
-
-      // Send /compact to trigger compaction
-      onSubmit('/compact', undefined)
-
-      // Set up a one-time listener for compaction complete.
-      // This handles the normal case (no reload during compaction).
-      const handleCompactionComplete = async (compactEvent: CustomEvent<{ sessionId?: string }>) => {
-        // Only handle if this is for our session
-        if (compactEvent.detail?.sessionId !== sessionId) {
-          return
-        }
-
-        // Remove the listener (one-time use)
-        window.removeEventListener('craft:compaction-complete', handleCompactionComplete as unknown as EventListener)
-
-        // Send the execution message with explicit plan path
-        // After compaction, Claude doesn't automatically remember the plan file
-        if (planPath) {
-          onSubmit(`Read the plan at ${planPath} and execute it.`, undefined)
-        } else {
-          onSubmit('Plan approved, please execute.', undefined)
-        }
-
-        // Clear the pending state since we just sent the execution message
-        if (sessionId) {
-          await window.electronAPI.sessionCommand(sessionId, {
-            type: 'clearPendingPlanExecution',
-          })
-        }
-      }
-
-      window.addEventListener('craft:compaction-complete', handleCompactionComplete as unknown as EventListener)
+      // Navigate to new chat with the plan execution message
+      // Use 'allow-all' mode since we're executing a pre-approved plan
+      // Pass fromPlanSessionId to link back to the original session
+      // Pass pendingTitleFromPlan so title is generated from plan content (not the generic "Read the plan..." message)
+      navigate(routes.action.newChat({
+        input: `Read the plan at ${planPath} and execute it.`,
+        send: true,
+        mode: 'allow-all',
+        workdir: workingDirectory,
+        fromPlanSessionId: sessionId,
+        pendingTitleFromPlan: planPath,
+      }))
     }
 
-    window.addEventListener('craft:approve-plan-with-compact', handleApprovePlanWithCompact as unknown as EventListener)
-    return () => window.removeEventListener('craft:approve-plan-with-compact', handleApprovePlanWithCompact as unknown as EventListener)
-  }, [sessionId, permissionMode, onPermissionModeChange, onSubmit])
-
-  // Reload recovery: Check for pending plan execution on mount.
-  // If the page reloaded after compaction completed (awaitingCompaction = false),
-  // we need to send the plan execution message that was interrupted by the reload.
-  // Also listen for compaction-complete in case CMD+R happened during compaction.
-  React.useEffect(() => {
-    if (!sessionId) return
-
-    let hasExecuted = false
-
-    const executePendingPlan = async () => {
-      if (hasExecuted) return
-
-      const pending = await window.electronAPI.getPendingPlanExecution(sessionId)
-      if (!pending || pending.awaitingCompaction) return
-
-      // Compaction completed but we never sent the execution message (page reloaded).
-      // Send it now and clear the pending state.
-      hasExecuted = true
-      console.log('[FreeFormInput] Resuming pending plan execution after reload:', pending.planPath)
-      onSubmit(`Read the plan at ${pending.planPath} and execute it.`, undefined)
-
-      await window.electronAPI.sessionCommand(sessionId, {
-        type: 'clearPendingPlanExecution',
-      })
-    }
-
-    // Check immediately on mount (handles case where compaction already completed)
-    executePendingPlan()
-
-    // Also listen for compaction-complete in case CMD+R happened during compaction.
-    // When compaction finishes after reload, this listener will trigger execution.
-    const handleCompactionComplete = async (e: CustomEvent<{ sessionId: string }>) => {
-      if (e.detail?.sessionId !== sessionId) return
-      // Small delay to ensure markCompactionComplete has been called
-      await new Promise(resolve => setTimeout(resolve, 100))
-      executePendingPlan()
-    }
-
-    window.addEventListener('craft:compaction-complete', handleCompactionComplete as unknown as EventListener)
-    return () => {
-      window.removeEventListener('craft:compaction-complete', handleCompactionComplete as unknown as EventListener)
-    }
-  }, [sessionId, onSubmit])
+    window.addEventListener('craft:approve-plan-new-chat', handleApprovePlanNewChat as unknown as EventListener)
+    return () => window.removeEventListener('craft:approve-plan-new-chat', handleApprovePlanNewChat as unknown as EventListener)
+  }, [sessionId])
 
   // Listen for craft:focus-input events (restore focus after popover/dropdown closes)
   React.useEffect(() => {

@@ -41,8 +41,12 @@ export const routes = {
      * @param send - If true and input is provided, immediately sends the message
      * @param status - Optional status/todo-state ID to apply to the new session
      * @param label - Optional label ID to apply to the new session
+     * @param mode - Optional permission mode ('safe', 'ask', 'allow-all')
+     * @param workdir - Optional working directory path
+     * @param fromPlanSessionId - Optional session ID where the plan originated (for "Accept in New Chat" linking)
+     * @param pendingTitleFromPlan - Optional plan path for deferred title generation from plan content
      */
-    newChat: (params?: { input?: string; name?: string; send?: boolean; status?: string; label?: string }) =>
+    newChat: (params?: { input?: string; name?: string; send?: boolean; status?: string; label?: string; mode?: string; workdir?: string; fromPlanSessionId?: string; pendingTitleFromPlan?: string }) =>
       `action/new-chat${toQueryString(params ? { ...params, send: params.send ? 'true' : undefined } : undefined)}` as const,
 
     /** Rename a session */
@@ -157,7 +161,8 @@ export const routes = {
         : 'settings' as const,
 
     /** Analytics view (shows subscription usage statistics) */
-    analytics: () => 'analytics' as const,
+    analytics: (sessionId?: string) =>
+      sessionId ? `analytics/session/${sessionId}` as const : 'analytics' as const,
   },
 } as const
 

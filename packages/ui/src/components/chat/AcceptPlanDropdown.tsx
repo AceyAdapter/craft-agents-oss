@@ -5,27 +5,27 @@ import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 /**
- * AcceptPlanDropdown - Dropdown for accepting plans with or without compaction
+ * AcceptPlanDropdown - Dropdown for accepting plans with different execution modes
  *
  * Provides two options:
- * 1. Accept - Execute the plan immediately
- * 2. Accept & Compact - Summarize conversation first, then execute
+ * 1. Accept - Execute the plan immediately in the current session
+ * 2. Accept in New Chat - Start a fresh session with the plan
  *
- * The compact option is useful when context is running low after a long planning session.
+ * The new chat option provides the cleanest possible context for plan execution.
  */
 
 interface AcceptPlanDropdownProps {
   /** Callback when user selects "Accept" (execute immediately) */
   onAccept: () => void
-  /** Callback when user selects "Accept & Compact" (compact first, then execute) */
-  onAcceptWithCompact: () => void
+  /** Callback when user selects "Accept in New Chat" (fresh session with plan) */
+  onAcceptInNewChat: () => void
   /** Additional className for the trigger button */
   className?: string
 }
 
 export function AcceptPlanDropdown({
   onAccept,
-  onAcceptWithCompact,
+  onAcceptInNewChat,
   className,
 }: AcceptPlanDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -96,11 +96,11 @@ export function AcceptPlanDropdown({
     onAccept()
   }, [handleClose, onAccept])
 
-  const handleSelectCompact = useCallback((e: React.MouseEvent) => {
+  const handleSelectNewChat = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     handleClose()
-    onAcceptWithCompact()
-  }, [handleClose, onAcceptWithCompact])
+    onAcceptInNewChat()
+  }, [handleClose, onAcceptInNewChat])
 
   // Update position when opening
   useEffect(() => {
@@ -144,11 +144,11 @@ export function AcceptPlanDropdown({
       {/* Trigger button - matches existing Accept Plan button styling */}
       <div
         ref={triggerRef}
-        onClick={handleToggle}
         className="inline-flex"
       >
         <button
           type="button"
+          onClick={handleToggle}
           className={cn(
             "h-[28px] pl-2.5 pr-2 text-xs font-medium rounded-[6px] flex items-center gap-1.5 transition-all",
             "bg-success/5 text-success hover:bg-success/10 shadow-tinted",
@@ -192,19 +192,19 @@ export function AcceptPlanDropdown({
             </span>
           </button>
 
-          {/* Option 2: Accept & Compact */}
+          {/* Option 2: Accept in New Chat */}
           <button
             type="button"
-            onClick={handleSelectCompact}
+            onClick={handleSelectNewChat}
             className={cn(
               "flex flex-col w-full px-3 py-2 text-left rounded-[6px]",
               "hover:bg-foreground/[0.05] focus:bg-foreground/[0.05] focus:outline-none",
               "transition-colors"
             )}
           >
-            <span className="text-[13px] font-medium">Accept & Compact</span>
+            <span className="text-[13px] font-medium">Accept in New Chat</span>
             <span className="text-xs text-muted-foreground">
-              Works best for complex, longer plans
+              Start fresh with clear context
             </span>
           </button>
         </div>,

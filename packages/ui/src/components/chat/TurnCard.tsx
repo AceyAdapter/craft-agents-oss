@@ -186,6 +186,10 @@ export interface ResponseContent {
   streamStartTime?: number
   /** Whether this response is a plan (renders with plan variant) */
   isPlan?: boolean
+  /** Timestamp when plan was accepted (for plan messages) */
+  planAcceptedAt?: number
+  /** Session ID where plan is being implemented (for plan messages) */
+  planImplementedInSessionId?: string
 }
 
 // ============================================================================
@@ -237,8 +241,10 @@ export interface TurnCardProps {
   renderActionsMenu?: () => React.ReactNode
   /** Callback when user accepts the plan (plan responses only) */
   onAcceptPlan?: () => void
-  /** Callback when user accepts the plan with compaction (compact conversation first, then execute) */
-  onAcceptPlanWithCompact?: () => void
+  /** Callback when user accepts the plan in a new chat (fresh session with plan) */
+  onAcceptPlanInNewChat?: () => void
+  /** Callback to navigate to a session (for accepted plan links) */
+  onNavigateToSession?: (sessionId: string) => void
   /** Whether this is the last response in the session (shows Accept Plan button only for last response) */
   isLastResponse?: boolean
   /** Session folder path for stripping from file paths in tool display */
@@ -1192,14 +1198,20 @@ export interface ResponseCardProps {
   variant?: 'response' | 'plan'
   /** Callback when user accepts the plan (plan variant only) */
   onAccept?: () => void
-  /** Callback when user accepts the plan with compaction (compact first, then execute) */
-  onAcceptWithCompact?: () => void
+  /** Callback when user accepts the plan in a new chat (fresh session with plan) */
+  onAcceptInNewChat?: () => void
   /** Whether this is the last response in the session (shows Accept Plan button only for last response) */
   isLastResponse?: boolean
   /** Whether to show the Accept Plan button (default: true) */
   showAcceptPlan?: boolean
   /** Hide footer for compact embedding (EditPopover) */
   compactMode?: boolean
+  /** Timestamp when plan was accepted (for plan messages) */
+  planAcceptedAt?: number
+  /** Session ID where plan is being implemented (for plan messages) */
+  planImplementedInSessionId?: string
+  /** Callback to navigate to the implementation session */
+  onNavigateToSession?: (sessionId: string) => void
 }
 
 const MAX_HEIGHT = 540
@@ -1229,10 +1241,13 @@ export function ResponseCard({
   onPopOut,
   variant = 'response',
   onAccept,
-  onAcceptWithCompact,
+  onAcceptInNewChat,
   isLastResponse = true,
   showAcceptPlan = true,
   compactMode = false,
+  planAcceptedAt,
+  planImplementedInSessionId,
+  onNavigateToSession,
 }: ResponseCardProps) {
   // Throttled content for display - updates every CONTENT_THROTTLE_MS during streaming
   const [displayedText, setDisplayedText] = useState(text)
@@ -1405,8 +1420,8 @@ export function ResponseCard({
                 )}
               </div>
 
-              {/* Right side - Accept Plan dropdown (only shown for plan variant when it's the last response) */}
-              {isPlan && showAcceptPlan && onAccept && onAcceptWithCompact && (
+              {/* Right side - Accept Plan dropdown or Accepted state (only shown for plan variant when it's the last response) */}
+              {isPlan && showAcceptPlan && (
                 <div
                   className={cn(
                     "flex items-center gap-3 transition-all duration-200",
@@ -1415,13 +1430,42 @@ export function ResponseCard({
                       : "opacity-0 translate-x-2 pointer-events-none"
                   )}
                 >
-                  <span className="text-xs text-muted-foreground">
-                    Type your feedback in chat or
-                  </span>
-                  <AcceptPlanDropdown
-                    onAccept={onAccept}
-                    onAcceptWithCompact={onAcceptWithCompact}
-                  />
+                  {/* Show Accepted badge when plan has been accepted */}
+                  {planAcceptedAt ? (
+                    <button
+                      type="button"
+                      className={cn(
+                        "h-[28px] px-2.5 text-xs font-medium rounded-[6px] flex items-center gap-1.5 transition-all",
+                        "bg-accent/10 text-accent hover:bg-accent/15 shadow-tinted",
+                        onNavigateToSession && planImplementedInSessionId && "cursor-pointer"
+                      )}
+                      style={{ '--shadow-color': '129, 96, 255' } as React.CSSProperties}
+                      onClick={() => {
+                        if (onNavigateToSession && planImplementedInSessionId) {
+                          onNavigateToSession(planImplementedInSessionId)
+                        }
+                      }}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      <span>Accepted</span>
+                      {onNavigateToSession && planImplementedInSessionId && (
+                        <ArrowUpRight className="h-3 w-3 ml-0.5" />
+                      )}
+                    </button>
+                  ) : (
+                    /* Show Accept Plan dropdown when plan hasn't been accepted */
+                    onAccept && onAcceptInNewChat && (
+                      <>
+                        <span className="text-xs text-muted-foreground">
+                          Type your feedback in chat or
+                        </span>
+                        <AcceptPlanDropdown
+                          onAccept={onAccept}
+                          onAcceptInNewChat={onAcceptInNewChat}
+                        />
+                      </>
+                    )
+                  )}
                 </div>
               )}
             </div>
@@ -1592,7 +1636,8 @@ export const TurnCard = React.memo(function TurnCard({
   todos,
   renderActionsMenu,
   onAcceptPlan,
-  onAcceptPlanWithCompact,
+  onAcceptPlanInNewChat,
+  onNavigateToSession,
   isLastResponse,
   sessionFolderPath,
   displayMode = 'detailed',
@@ -1920,9 +1965,12 @@ export const TurnCard = React.memo(function TurnCard({
                 onPopOut={onPopOut ? () => onPopOut(response.text) : undefined}
                 variant={response.isPlan ? 'plan' : 'response'}
                 onAccept={onAcceptPlan}
-                onAcceptWithCompact={onAcceptPlanWithCompact}
+                onAcceptInNewChat={onAcceptPlanInNewChat}
                 isLastResponse={isLastResponse}
                 compactMode={compactMode}
+                planAcceptedAt={response.planAcceptedAt}
+                planImplementedInSessionId={response.planImplementedInSessionId}
+                onNavigateToSession={onNavigateToSession}
               />
             </motion.div>
           )}
@@ -1940,9 +1988,12 @@ export const TurnCard = React.memo(function TurnCard({
             onPopOut={onPopOut ? () => onPopOut(response.text) : undefined}
             variant={response.isPlan ? 'plan' : 'response'}
             onAccept={onAcceptPlan}
-            onAcceptWithCompact={onAcceptPlanWithCompact}
+            onAcceptInNewChat={onAcceptPlanInNewChat}
             isLastResponse={isLastResponse}
             compactMode={compactMode}
+            planAcceptedAt={response.planAcceptedAt}
+            planImplementedInSessionId={response.planImplementedInSessionId}
+            onNavigateToSession={onNavigateToSession}
           />
         </div>
       )}

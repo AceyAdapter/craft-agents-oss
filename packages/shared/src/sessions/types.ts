@@ -129,6 +129,13 @@ export interface SessionConfig {
   };
   /** When true, session is hidden from session list (e.g., mini edit sessions) */
   hidden?: boolean;
+  /**
+   * Plan path for deferred title generation.
+   * When set, title generation waits for the first tool_result (Read tool reading this plan),
+   * then generates a title from the plan content instead of the user message.
+   * Cleared after title is generated.
+   */
+  pendingTitleFromPlan?: string;
 }
 
 /**
@@ -200,6 +207,13 @@ export interface SessionHeader {
   };
   /** When true, session is hidden from session list (e.g., mini edit sessions) */
   hidden?: boolean;
+  /**
+   * Plan path for deferred title generation.
+   * When set, title generation waits for the first tool_result (Read tool reading this plan),
+   * then generates a title from the plan content instead of the user message.
+   * Cleared after title is generated.
+   */
+  pendingTitleFromPlan?: string;
   // Pre-computed fields for fast list loading
   /** Number of messages in session */
   messageCount: number;

@@ -373,6 +373,9 @@ interface ManagedSession {
   // Subscription usage snapshot at start of current processing turn
   // Used to calculate usage delta when processing completes
   startUsageSnapshot?: UsageSnapshot
+  // Deferred title generation: when set, wait for first tool_result reading this plan path
+  // and generate title from the plan content instead of the user message
+  pendingTitleFromPlan?: string
 }
 
 // Convert runtime Message to StoredMessage for persistence
@@ -1476,6 +1479,8 @@ export class SessionManager {
       backgroundShellCommands: new Map(),
       messagesLoaded: true,  // New sessions don't need to load messages from disk
       hidden: options?.hidden,
+      // Deferred title generation: wait for plan content instead of using user message
+      pendingTitleFromPlan: options?.pendingTitleFromPlan,
     }
 
     this.sessions.set(storedSession.id, managed)
@@ -1888,6 +1893,43 @@ export class SessionManager {
     const managed = this.sessions.get(sessionId)
     if (!managed) return null
     return getStoredPendingPlanExecution(managed.workspace.rootPath, sessionId)
+  }
+
+  /**
+   * Mark a plan as accepted in the original session.
+   * Called when user clicks "Accept in New Chat" - updates the plan message
+   * with acceptance timestamp and a link to the implementation session.
+   */
+  async markPlanAccepted(sessionId: string, implementedInSessionId: string): Promise<void> {
+    const managed = this.sessions.get(sessionId)
+    if (!managed) {
+      sessionLog.warn(`markPlanAccepted: session ${sessionId} not found`)
+      return
+    }
+
+    // Ensure messages are loaded before modifying
+    await this.ensureMessagesLoaded(managed)
+
+    // Find the most recent plan message
+    const planMessage = [...managed.messages].reverse().find(m => m.role === 'plan')
+    if (!planMessage) {
+      sessionLog.warn(`markPlanAccepted: no plan message found in session ${sessionId}`)
+      return
+    }
+
+    // Update the plan message with acceptance info
+    planMessage.planAcceptedAt = Date.now()
+    planMessage.planImplementedInSessionId = implementedInSessionId
+
+    // Persist the session
+    this.persistSession(managed)
+    await this.flushSession(sessionId)
+
+    // Emit a plan_submitted event so the UI updates
+    // (reuses existing event type since it triggers UI refresh)
+    this.sendEvent({ type: 'plan_submitted', sessionId, message: planMessage }, managed.workspace.id)
+
+    sessionLog.info(`Session ${sessionId}: marked plan as accepted, implemented in ${implementedInSessionId}`)
   }
 
   // ============================================
@@ -2508,7 +2550,13 @@ export class SessionManager {
         }, managed.workspace.id)
 
         // Generate AI title asynchronously (will update the initial title)
-        this.generateTitle(managed, message)
+        // Skip if pendingTitleFromPlan is set - title will be generated from plan content
+        // when the Read tool result arrives
+        if (!managed.pendingTitleFromPlan) {
+          this.generateTitle(managed, message)
+        } else {
+          sessionLog.info(`Session ${sessionId}: deferring title generation until plan is read`)
+        }
       }
     }
 
@@ -3206,6 +3254,77 @@ To view this task's output:
     }
   }
 
+  /**
+   * Generate an AI title for a session from plan content.
+   * Called when "Accept in New Chat" deferred title generation detects the plan has been read.
+   * Uses the plan content (markdown) instead of the generic "Read the plan..." user message.
+   */
+  private async generateTitleFromPlan(managed: ManagedSession, planContent: string): Promise<void> {
+    sessionLog.info(`Starting deferred title generation from plan for session ${managed.id}`)
+    try {
+      // Extract a summary from the plan content for title generation
+      // The plan is markdown, so we try to get the summary or first meaningful section
+      const planSummary = this.extractPlanSummary(planContent)
+      const title = await generateSessionTitle(planSummary)
+      if (title) {
+        managed.name = title
+        this.persistSession(managed)
+        await this.flushSession(managed.id)
+        this.sendEvent({ type: 'title_generated', sessionId: managed.id, title }, managed.workspace.id)
+        sessionLog.info(`Generated title from plan for session ${managed.id}: "${title}"`)
+      } else {
+        sessionLog.warn(`Title generation from plan returned null for session ${managed.id}`)
+      }
+    } catch (error) {
+      sessionLog.error(`Failed to generate title from plan for session ${managed.id}:`, error)
+    }
+  }
+
+  /**
+   * Extract a meaningful summary from plan content for title generation.
+   * Looks for the plan title (# heading) and summary section.
+   */
+  private extractPlanSummary(planContent: string): string {
+    const lines = planContent.split('\n')
+
+    // Extract the title (first # heading)
+    const titleLine = lines.find(line => line.startsWith('# '))
+    const title = titleLine ? titleLine.replace(/^#\s*/, '').trim() : ''
+
+    // Look for a ## Summary section
+    let summary = ''
+    let inSummarySection = false
+    for (const line of lines) {
+      if (line.toLowerCase().startsWith('## summary')) {
+        inSummarySection = true
+        continue
+      }
+      if (inSummarySection) {
+        if (line.startsWith('## ')) {
+          // End of summary section
+          break
+        }
+        if (line.trim()) {
+          summary += line.trim() + ' '
+        }
+      }
+    }
+    summary = summary.trim()
+
+    // Combine title and summary, limit to reasonable length
+    if (title && summary) {
+      return `${title}: ${summary}`.slice(0, 500)
+    } else if (title) {
+      return title.slice(0, 500)
+    } else if (summary) {
+      return summary.slice(0, 500)
+    }
+
+    // Fallback: use first non-empty lines
+    const firstLines = lines.filter(l => l.trim()).slice(0, 5).join(' ').slice(0, 500)
+    return firstLines || 'Plan execution'
+  }
+
   private processEvent(managed: ManagedSession, event: AgentEvent): void {
     const sessionId = managed.id
     const workspaceId = managed.workspace.id
@@ -3410,6 +3529,20 @@ To view this task's output:
             parentToolUseId,
             isError: event.isError,
           }, workspaceId)
+        }
+
+        // Deferred title generation: when pendingTitleFromPlan is set and we receive
+        // a Read tool result for that plan path, generate title from the plan content
+        if (managed.pendingTitleFromPlan && toolName === 'Read' && !event.isError && formattedResult) {
+          // Check if the Read tool was reading the expected plan file
+          const readPath = existingToolMsg?.toolInput?.file_path as string | undefined
+          if (readPath && readPath.includes(managed.pendingTitleFromPlan)) {
+            sessionLog.info(`Deferred title generation: Read tool result matches pending plan path ${managed.pendingTitleFromPlan}`)
+            // Generate title from the plan content
+            this.generateTitleFromPlan(managed, formattedResult)
+            // Clear the pending flag so we don't generate title again
+            managed.pendingTitleFromPlan = undefined
+          }
         }
 
         // Safety net: when a parent Task completes, mark all its still-pending child tools as completed.

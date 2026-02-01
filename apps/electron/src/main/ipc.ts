@@ -384,6 +384,8 @@ export function registerIpcHandlers(sessionManager: SessionManager, windowManage
         return sessionManager.markCompactionComplete(sessionId)
       case 'clearPendingPlanExecution':
         return sessionManager.clearPendingPlanExecution(sessionId)
+      case 'markPlanAccepted':
+        return sessionManager.markPlanAccepted(sessionId, command.implementedInSessionId)
       default: {
         const _exhaustive: never = command
         throw new Error(`Unknown session command: ${JSON.stringify(command)}`)

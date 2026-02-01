@@ -395,6 +395,12 @@ export interface CreateSessionOptions {
   systemPromptPreset?: 'default' | 'mini' | string
   /** When true, session won't appear in session list (e.g., mini edit sessions) */
   hidden?: boolean
+  /**
+   * Plan path for deferred title generation.
+   * When set, title generation waits for the first tool_result (Read tool reading this plan),
+   * then generates a title from the plan content instead of the user message.
+   */
+  pendingTitleFromPlan?: string
 }
 
 // Events sent from main to renderer
@@ -489,6 +495,8 @@ export type SessionCommand =
   | { type: 'setPendingPlanExecution'; planPath: string }
   | { type: 'markCompactionComplete' }
   | { type: 'clearPendingPlanExecution' }
+  // Plan acceptance tracking (Accept in New Chat flow)
+  | { type: 'markPlanAccepted'; implementedInSessionId: string }
 
 /**
  * Parameters for opening a new chat session
@@ -1188,10 +1196,20 @@ export interface SkillsNavigationState {
 }
 
 /**
+ * Analytics navigation details - selected session for detail view
+ */
+export type AnalyticsDetails = {
+  type: 'session'
+  sessionId: string
+}
+
+/**
  * Analytics navigation state - shows AnalyticsPanel for subscription usage tracking
  */
 export interface AnalyticsNavigationState {
   navigator: 'analytics'
+  /** Selected session for detail view in main content area */
+  details?: AnalyticsDetails | null
   /** Optional right sidebar panel state */
   rightSidebar?: RightSidebarPanel
 }

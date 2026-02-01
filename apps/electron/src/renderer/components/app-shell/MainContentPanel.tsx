@@ -23,9 +23,11 @@ import {
   isSourcesNavigation,
   isSettingsNavigation,
   isSkillsNavigation,
+  isAnalyticsNavigation,
 } from '@/contexts/NavigationContext'
 import { AppSettingsPage, AppearanceSettingsPage, InputSettingsPage, WorkspaceSettingsPage, PermissionsSettingsPage, LabelsSettingsPage, PreferencesPage, ShortcutsPage, SourceInfoPage, ChatPage } from '@/pages'
 import SkillInfoPage from '@/pages/SkillInfoPage'
+import { AnalyticsSessionDetailPage } from '@/pages/analytics/AnalyticsSessionDetailPage'
 
 export interface MainContentPanelProps {
   /** Whether the app is in focused mode (single chat, no sidebar) */
@@ -142,6 +144,25 @@ export function MainContentPanel({
       <Panel variant="grow" className={className}>
         <div className="flex items-center justify-center h-full text-muted-foreground">
           <p className="text-sm">No skills configured</p>
+        </div>
+      </Panel>
+    )
+  }
+
+  // Analytics navigator - show session detail or empty state
+  if (isAnalyticsNavigation(navState)) {
+    if (navState.details) {
+      return wrapWithStoplight(
+        <Panel variant="grow" className={className}>
+          <AnalyticsSessionDetailPage sessionId={navState.details.sessionId} />
+        </Panel>
+      )
+    }
+    // No session selected - empty state
+    return wrapWithStoplight(
+      <Panel variant="grow" className={className}>
+        <div className="flex items-center justify-center h-full text-muted-foreground">
+          <p className="text-sm">Select a session to view details</p>
         </div>
       </Panel>
     )

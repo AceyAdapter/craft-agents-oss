@@ -239,6 +239,10 @@ export function NavigationProvider({
               systemPromptPreset: parsed.params.systemPrompt,
             })
           }
+          // Deferred title generation from plan content
+          if (parsed.params.pendingTitleFromPlan) {
+            createOptions.pendingTitleFromPlan = parsed.params.pendingTitleFromPlan
+          }
           const session = await onCreateSession(workspaceId, createOptions)
 
           // Rename session if name provided
@@ -303,6 +307,16 @@ export function NavigationProvider({
                   badges ? { badges } : undefined
                 )
               }, 100)
+
+              // Mark the plan as accepted in the original session (if from "Accept in New Chat")
+              if (parsed.params.fromPlanSessionId) {
+                setTimeout(() => {
+                  window.electronAPI.sessionCommand(
+                    parsed.params.fromPlanSessionId!,
+                    { type: 'markPlanAccepted', implementedInSessionId: session.id }
+                  )
+                }, 150) // Run slightly after sendMessage to ensure session is fully created
+              }
             } else if (onInputChange) {
               // Pre-fill input box without sending
               setTimeout(() => {

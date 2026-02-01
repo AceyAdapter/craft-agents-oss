@@ -181,6 +181,8 @@ export interface Message {
   ultrathink?: boolean;
   // Plan-specific fields (for role='plan')
   planPath?: string;  // Path to the plan markdown file
+  planAcceptedAt?: number;  // Timestamp when plan was accepted
+  planImplementedInSessionId?: string;  // Link to the session where plan is being implemented
   // Auth-request-specific fields (for role='auth-request')
   authRequestId?: string;         // Unique ID for the auth request
   authRequestType?: AuthRequestType;
@@ -249,6 +251,8 @@ export interface StoredMessage {
   ultrathink?: boolean;
   // Plan-specific fields (for role='plan')
   planPath?: string;
+  planAcceptedAt?: number;  // Timestamp when plan was accepted
+  planImplementedInSessionId?: string;  // Link to the session where plan is being implemented
   // Auth-request-specific fields (for role='auth-request')
   authRequestId?: string;
   authRequestType?: AuthRequestType;

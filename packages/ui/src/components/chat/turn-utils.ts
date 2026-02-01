@@ -529,6 +529,8 @@ export function groupMessagesByTurn(messages: Message[]): Turn[] {
         text: message.content,
         isStreaming: false,
         isPlan: true,
+        planAcceptedAt: message.planAcceptedAt,
+        planImplementedInSessionId: message.planImplementedInSessionId,
       }
       currentTurn.isStreaming = false
       currentTurn.isComplete = true

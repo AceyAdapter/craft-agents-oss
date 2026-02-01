@@ -91,8 +91,14 @@ export function parseCompoundRoute(route: string): ParsedCompoundRoute | null {
 
   const first = segments[0]
 
-  // Analytics navigator
+  // Analytics navigator - supports session detail: analytics/session/{sessionId}
   if (first === 'analytics') {
+    if (segments[1] === 'session' && segments[2]) {
+      return {
+        navigator: 'analytics',
+        details: { type: 'session', id: segments[2] },
+      }
+    }
     return { navigator: 'analytics', details: null }
   }
 
@@ -327,6 +333,9 @@ export function parseRoute(route: string): ParsedRoute | null {
 function convertCompoundToViewRoute(compound: ParsedCompoundRoute): ParsedRoute {
   // Analytics
   if (compound.navigator === 'analytics') {
+    if (compound.details?.type === 'session') {
+      return { type: 'view', name: 'analytics-session', id: compound.details.id, params: {} }
+    }
     return { type: 'view', name: 'analytics', params: {} }
   }
 
@@ -439,8 +448,14 @@ export function parseRouteToNavigationState(
  * Convert a ParsedCompoundRoute to NavigationState
  */
 function convertCompoundToNavigationState(compound: ParsedCompoundRoute): NavigationState {
-  // Analytics
+  // Analytics - supports session detail
   if (compound.navigator === 'analytics') {
+    if (compound.details?.type === 'session') {
+      return {
+        navigator: 'analytics',
+        details: { type: 'session', sessionId: compound.details.id },
+      }
+    }
     return { navigator: 'analytics' }
   }
 
@@ -504,6 +519,14 @@ function convertParsedRouteToNavigationState(parsed: ParsedRoute): NavigationSta
 
   switch (parsed.name) {
     case 'analytics':
+      return { navigator: 'analytics' }
+    case 'analytics-session':
+      if (parsed.id) {
+        return {
+          navigator: 'analytics',
+          details: { type: 'session', sessionId: parsed.id },
+        }
+      }
       return { navigator: 'analytics' }
     case 'settings':
       return { navigator: 'settings', subpage: 'app' }
@@ -613,6 +636,9 @@ function convertParsedRouteToNavigationState(parsed: ParsedRoute): NavigationSta
  */
 export function buildRouteFromNavigationState(state: NavigationState): string {
   if (state.navigator === 'analytics') {
+    if (state.details) {
+      return `analytics/session/${state.details.sessionId}`
+    }
     return 'analytics'
   }
 
