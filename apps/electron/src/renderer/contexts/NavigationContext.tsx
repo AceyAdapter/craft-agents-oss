@@ -51,6 +51,7 @@ import type {
   SourceFilter,
   RightSidebarPanel,
   ContentBadge,
+  StoredAttachment,
 } from '../../shared/types'
 import {
   isChatsNavigation,
@@ -292,18 +293,29 @@ export function NavigationProvider({
             }
           }
 
+          // Parse storedAttachments from params (JSON-encoded, from "Accept in New Chat")
+          let storedAttachments: StoredAttachment[] | undefined
+          if (parsed.params.attachments) {
+            try {
+              storedAttachments = JSON.parse(parsed.params.attachments) as StoredAttachment[]
+            } catch (e) {
+              console.warn('[Navigation] Failed to parse attachments param:', e)
+            }
+          }
+
           // Handle input: either auto-send (if send=true) or pre-fill
           if (parsed.params.input) {
             const shouldSend = parsed.params.send === 'true'
             if (shouldSend) {
               // Auto-send the message immediately after session is ready
               // Pass badges in options so they're stored with the message
+              // Pass storedAttachments to reference existing files from original session
               setTimeout(() => {
                 window.electronAPI.sendMessage(
                   session.id,
                   parsed.params.input!,
-                  undefined, // attachments
-                  undefined, // storedAttachments
+                  undefined, // attachments (FileAttachment[] - for new uploads)
+                  storedAttachments, // storedAttachments - reference existing files
                   badges ? { badges } : undefined
                 )
               }, 100)

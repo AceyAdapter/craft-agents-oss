@@ -22,6 +22,22 @@ Both are optional - the app has sensible built-in defaults.
 | `success` | Connected status | Green checkmarks, success states |
 | `destructive` | Errors, delete actions | Red alerts, failed states |
 
+### Additional CSS Variables
+
+Beyond the 6 base colors, these CSS variables can be overridden for fine-tuning:
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `--status-glyph` | Checkmark/X inside filled status icons | Dark in light mode, white in dark mode |
+
+Example override for a light theme with pastel status colors:
+```json
+{
+  "success": "oklch(0.85 0.15 145)",
+  "statusGlyph": "oklch(0.2 0 0)"
+}
+```
+
 ## Color Formats
 
 Any valid CSS color format is supported:

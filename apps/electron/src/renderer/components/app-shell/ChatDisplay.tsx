@@ -1403,6 +1403,11 @@ export const ChatDisplay = React.forwardRef<ChatDisplayHandle, ChatDisplayProps>
                           const planMessage = session?.messages.findLast(m => m.role === 'plan')
                           const planPath = planMessage?.planPath
 
+                          // Collect all attachments from user messages in this session
+                          const allAttachments = session?.messages
+                            .filter(m => m.role === 'user' && m.attachments?.length)
+                            .flatMap(m => m.attachments!) ?? []
+
                           // Dispatch event to create a new session with the plan
                           // FreeFormInput handles this by creating a new session,
                           // navigating to it, and sending a message to read and execute the plan
@@ -1412,6 +1417,7 @@ export const ChatDisplay = React.forwardRef<ChatDisplayHandle, ChatDisplayProps>
                               planPath,
                               workingDirectory: session?.workingDirectory,
                               permissionMode: session?.permissionMode,
+                              attachments: allAttachments,
                             }
                           }))
                         }}

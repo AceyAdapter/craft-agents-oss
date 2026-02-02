@@ -3,22 +3,126 @@ interface CraftAgentsSymbolProps {
 }
 
 /**
- * Craft Agents "E" symbol - the small pixel art icon
- * Uses accent color from theme (currentColor from className)
+ * Stony Kitchen symbol - green triangle with dots
+ * Uses currentColor for theming compatibility
  */
 export function CraftAgentsSymbol({ className }: CraftAgentsSymbolProps) {
   return (
     <svg
-      viewBox="452 368 115 129"
+      viewBox="0 0 378 378"
       className={className}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d="M474.78218,393.8 L474.78218,368 L566.666667,368 L566.666667,393.8 L474.78218,393.8 Z M521.101,419.6 L521.102306,445.4 L452,445.4 L452,393.8 L566.666667,393.8 L566.666667,419.6 L521.101,419.6 Z M474.78218,497 L474.775667,471.2 L452,471.2 L452,445.4 L566.666667,445.4 L566.666667,497 L474.78218,497 Z"
-        fill="currentColor"
-        fillRule="nonzero"
-      />
+      <path d="M154.846 92C170.242 65.3333 208.733 65.3333 224.129 92L289.556 205.324C304.952 231.991 285.707 265.324 254.915 265.324H124.059C93.2673 265.324 74.0227 231.991 89.4187 205.324L154.846 92ZM214.981 121C203.434 101 174.566 101 163.019 121L119.718 196C108.171 216 122.605 241 145.699 241H232.302C255.395 241 269.829 216 258.282 196L214.981 121Z" fill="currentColor"/>
+      <circle cx="164.296" cy="51.1634" r="7.66322" transform="rotate(-10 164.296 51.1634)" fill="currentColor"/>
+      <circle cx="140.813" cy="57.4556" r="7.66322" transform="rotate(-20 140.813 57.4556)" fill="currentColor"/>
+      <circle cx="118.78" cy="67.7302" r="7.66322" transform="rotate(-30 118.78 67.7302)" fill="currentColor"/>
+      <circle cx="98.865" cy="81.6745" r="7.66322" transform="rotate(-40 98.865 81.6745)" fill="currentColor"/>
+      <circle cx="81.6746" cy="98.865" r="7.66322" transform="rotate(-50 81.6746 98.865)" fill="currentColor"/>
+      <circle cx="67.7299" cy="118.78" r="7.66322" transform="rotate(-60 67.7299 118.78)" fill="currentColor"/>
+      <circle cx="57.4553" cy="140.813" r="7.66322" transform="rotate(-70 57.4553 140.813)" fill="currentColor"/>
+      <circle cx="51.1631" cy="164.297" r="7.66322" transform="rotate(-80 51.1631 164.297)" fill="currentColor"/>
+      <circle cx="49.0446" cy="188.515" r="7.66322" transform="rotate(-90 49.0446 188.515)" fill="currentColor"/>
+      <circle cx="51.1634" cy="212.734" r="7.66322" transform="rotate(-100 51.1634 212.734)" fill="currentColor"/>
+      <circle cx="57.4556" cy="236.217" r="7.66322" transform="rotate(-110 57.4556 236.217)" fill="currentColor"/>
+      <circle cx="67.7302" cy="258.25" r="7.66322" transform="rotate(-120 67.7302 258.25)" fill="currentColor"/>
+      <circle cx="81.6745" cy="278.165" r="7.66322" transform="rotate(-130 81.6745 278.165)" fill="currentColor"/>
+      <circle cx="98.865" cy="295.356" r="7.66322" transform="rotate(-140 98.865 295.356)" fill="currentColor"/>
+      <circle cx="118.78" cy="309.3" r="7.66322" transform="rotate(-150 118.78 309.3)" fill="currentColor"/>
+      <circle cx="140.813" cy="319.574" r="7.66322" transform="rotate(-160 140.813 319.574)" fill="currentColor"/>
+      <circle cx="164.296" cy="325.867" r="7.66322" transform="rotate(-170 164.296 325.867)" fill="currentColor"/>
+      <circle cx="188.515" cy="327.985" r="7.66322" transform="rotate(180 188.515 327.985)" fill="currentColor"/>
+      <circle cx="212.734" cy="325.867" r="7.66322" transform="rotate(170 212.734 325.867)" fill="currentColor"/>
+      <circle cx="236.217" cy="319.574" r="7.66322" transform="rotate(160 236.217 319.574)" fill="currentColor"/>
+      <circle cx="258.251" cy="309.3" r="7.66322" transform="rotate(150 258.251 309.3)" fill="currentColor"/>
+      <circle cx="278.165" cy="295.355" r="7.66322" transform="rotate(140 278.165 295.355)" fill="currentColor"/>
+      <circle cx="295.356" cy="278.165" r="7.66322" transform="rotate(130 295.356 278.165)" fill="currentColor"/>
+      <circle cx="309.3" cy="258.25" r="7.66322" transform="rotate(120 309.3 258.25)" fill="currentColor"/>
+      <circle cx="319.574" cy="236.217" r="7.66322" transform="rotate(110 319.574 236.217)" fill="currentColor"/>
+      <circle cx="325.867" cy="212.734" r="7.66322" transform="rotate(100 325.867 212.734)" fill="currentColor"/>
+      <circle cx="327.986" cy="188.515" r="7.66322" transform="rotate(90 327.986 188.515)" fill="currentColor"/>
+      <circle cx="325.866" cy="164.296" r="7.66322" transform="rotate(80 325.866 164.296)" fill="currentColor"/>
+      <circle cx="319.574" cy="140.813" r="7.66322" transform="rotate(70 319.574 140.813)" fill="currentColor"/>
+      <circle cx="309.3" cy="118.78" r="7.66322" transform="rotate(60 309.3 118.78)" fill="currentColor"/>
+      <circle cx="295.356" cy="98.865" r="7.66322" transform="rotate(50 295.356 98.865)" fill="currentColor"/>
+      <circle cx="278.165" cy="81.6746" r="7.66322" transform="rotate(40 278.165 81.6746)" fill="currentColor"/>
+      <circle cx="258.25" cy="67.7299" r="7.66322" transform="rotate(30 258.25 67.7299)" fill="currentColor"/>
+      <circle cx="236.217" cy="57.4558" r="7.66322" transform="rotate(20 236.217 57.4558)" fill="currentColor"/>
+      <circle cx="212.734" cy="51.1636" r="7.66322" transform="rotate(10 212.734 51.1636)" fill="currentColor"/>
+      <circle cx="188.515" cy="49.0446" r="7.66322" fill="currentColor"/>
+      <circle cx="146.021" cy="34.0902" r="6.89689" transform="rotate(-15 146.021 34.0902)" fill="currentColor"/>
+      <circle cx="119.851" cy="43.815" r="6.89689" transform="rotate(-25 119.851 43.815)" fill="currentColor"/>
+      <circle cx="95.7676" cy="57.9364" r="6.89689" transform="rotate(-35 95.7676 57.9364)" fill="currentColor"/>
+      <circle cx="74.5017" cy="76.0259" r="6.89689" transform="rotate(-45 74.5017 76.0259)" fill="currentColor"/>
+      <circle cx="56.7007" cy="97.5333" r="6.89689" transform="rotate(-55 56.7007 97.5333)" fill="currentColor"/>
+      <circle cx="42.9042" cy="121.805" r="6.89689" transform="rotate(-65 42.9042 121.805)" fill="currentColor"/>
+      <circle cx="33.5319" cy="148.103" r="6.89689" transform="rotate(-75 33.5319 148.103)" fill="currentColor"/>
+      <circle cx="28.8692" cy="175.63" r="6.89689" transform="rotate(-85 28.8692 175.63)" fill="currentColor"/>
+      <circle cx="29.0571" cy="203.548" r="6.89689" transform="rotate(-95 29.0571 203.548)" fill="currentColor"/>
+      <circle cx="34.0902" cy="231.009" r="6.89689" transform="rotate(-105 34.0902 231.009)" fill="currentColor"/>
+      <circle cx="43.815" cy="257.179" r="6.89689" transform="rotate(-115 43.815 257.179)" fill="currentColor"/>
+      <circle cx="57.9364" cy="281.263" r="6.89689" transform="rotate(-125 57.9364 281.263)" fill="currentColor"/>
+      <circle cx="76.0259" cy="302.528" r="6.89689" transform="rotate(-135 76.0259 302.528)" fill="currentColor"/>
+      <circle cx="97.5333" cy="320.33" r="6.89689" transform="rotate(-145 97.5333 320.33)" fill="currentColor"/>
+      <circle cx="121.805" cy="334.126" r="6.89689" transform="rotate(-155 121.805 334.126)" fill="currentColor"/>
+      <circle cx="148.103" cy="343.498" r="6.89689" transform="rotate(-165 148.103 343.498)" fill="currentColor"/>
+      <circle cx="175.629" cy="348.161" r="6.89689" transform="rotate(-175 175.629 348.161)" fill="currentColor"/>
+      <circle cx="203.548" cy="347.973" r="6.89689" transform="rotate(175 203.548 347.973)" fill="currentColor"/>
+      <circle cx="231.009" cy="342.94" r="6.89689" transform="rotate(165 231.009 342.94)" fill="currentColor"/>
+      <circle cx="257.179" cy="333.215" r="6.89689" transform="rotate(155 257.179 333.215)" fill="currentColor"/>
+      <circle cx="281.263" cy="319.093" r="6.89689" transform="rotate(145 281.263 319.093)" fill="currentColor"/>
+      <circle cx="302.528" cy="301.004" r="6.89689" transform="rotate(135 302.528 301.004)" fill="currentColor"/>
+      <circle cx="320.33" cy="279.497" r="6.89689" transform="rotate(125 320.33 279.497)" fill="currentColor"/>
+      <circle cx="334.126" cy="255.225" r="6.89689" transform="rotate(115 334.126 255.225)" fill="currentColor"/>
+      <circle cx="343.498" cy="228.927" r="6.89689" transform="rotate(105 343.498 228.927)" fill="currentColor"/>
+      <circle cx="348.161" cy="201.4" r="6.89689" transform="rotate(95 348.161 201.4)" fill="currentColor"/>
+      <circle cx="347.973" cy="173.482" r="6.89689" transform="rotate(85 347.973 173.482)" fill="currentColor"/>
+      <circle cx="342.94" cy="146.021" r="6.89689" transform="rotate(75 342.94 146.021)" fill="currentColor"/>
+      <circle cx="333.215" cy="119.851" r="6.89689" transform="rotate(65 333.215 119.851)" fill="currentColor"/>
+      <circle cx="319.093" cy="95.7676" r="6.89689" transform="rotate(55 319.093 95.7676)" fill="currentColor"/>
+      <circle cx="301.004" cy="74.5022" r="6.89689" transform="rotate(45 301.004 74.5022)" fill="currentColor"/>
+      <circle cx="279.497" cy="56.7002" r="6.89689" transform="rotate(35 279.497 56.7002)" fill="currentColor"/>
+      <circle cx="255.225" cy="42.9042" r="6.89689" transform="rotate(25 255.225 42.9042)" fill="currentColor"/>
+      <circle cx="228.927" cy="33.5319" r="6.89689" transform="rotate(15 228.927 33.5319)" fill="currentColor"/>
+      <circle cx="201.4" cy="28.8692" r="6.89689" transform="rotate(5 201.4 28.8692)" fill="currentColor"/>
+      <circle cx="173.482" cy="29.0571" r="6.89689" transform="rotate(-5 173.482 29.0571)" fill="currentColor"/>
+      <circle cx="154.988" cy="10.7849" r="6.13057" transform="rotate(-10 154.988 10.7849)" fill="currentColor"/>
+      <circle cx="124.635" cy="19.3071" r="6.13057" transform="rotate(-20 124.635 19.3071)" fill="currentColor"/>
+      <circle cx="96.2227" cy="32.9705" r="6.13057" transform="rotate(-30 96.2227 32.9705)" fill="currentColor"/>
+      <circle cx="70.6145" cy="51.3601" r="6.13057" transform="rotate(-40 70.6145 51.3601)" fill="currentColor"/>
+      <circle cx="48.5891" cy="73.9167" r="6.13057" transform="rotate(-50 48.5891 73.9167)" fill="currentColor"/>
+      <circle cx="30.8154" cy="99.9558" r="6.13057" transform="rotate(-60 30.8154 99.9558)" fill="currentColor"/>
+      <circle cx="17.8327" cy="128.686" r="6.13057" transform="rotate(-70 17.8327 128.686)" fill="currentColor"/>
+      <circle cx="10.0366" cy="159.233" r="6.13057" transform="rotate(-80 10.0366 159.233)" fill="currentColor"/>
+      <circle cx="7.66329" cy="190.67" r="6.13057" transform="rotate(-90 7.66329 190.67)" fill="currentColor"/>
+      <circle cx="10.7849" cy="222.043" r="6.13057" transform="rotate(-100 10.7849 222.043)" fill="currentColor"/>
+      <circle cx="19.3071" cy="252.396" r="6.13057" transform="rotate(-110 19.3071 252.396)" fill="currentColor"/>
+      <circle cx="32.9705" cy="280.808" r="6.13057" transform="rotate(-120 32.9705 280.808)" fill="currentColor"/>
+      <circle cx="51.3601" cy="306.416" r="6.13057" transform="rotate(-130 51.3601 306.416)" fill="currentColor"/>
+      <circle cx="73.9167" cy="328.442" r="6.13057" transform="rotate(-140 73.9167 328.442)" fill="currentColor"/>
+      <circle cx="99.9558" cy="346.216" r="6.13057" transform="rotate(-150 99.9558 346.216)" fill="currentColor"/>
+      <circle cx="128.686" cy="359.198" r="6.13057" transform="rotate(-160 128.686 359.198)" fill="currentColor"/>
+      <circle cx="159.233" cy="366.994" r="6.13057" transform="rotate(-170 159.233 366.994)" fill="currentColor"/>
+      <circle cx="190.671" cy="369.367" r="6.13057" transform="rotate(180 190.671 369.367)" fill="currentColor"/>
+      <circle cx="222.043" cy="366.245" r="6.13057" transform="rotate(170 222.043 366.245)" fill="currentColor"/>
+      <circle cx="252.396" cy="357.723" r="6.13057" transform="rotate(160 252.396 357.723)" fill="currentColor"/>
+      <circle cx="280.808" cy="344.06" r="6.13057" transform="rotate(150 280.808 344.06)" fill="currentColor"/>
+      <circle cx="306.416" cy="325.67" r="6.13057" transform="rotate(140 306.416 325.67)" fill="currentColor"/>
+      <circle cx="328.442" cy="303.114" r="6.13057" transform="rotate(130 328.442 303.114)" fill="currentColor"/>
+      <circle cx="346.215" cy="277.075" r="6.13057" transform="rotate(120 346.215 277.075)" fill="currentColor"/>
+      <circle cx="359.198" cy="248.345" r="6.13057" transform="rotate(110 359.198 248.345)" fill="currentColor"/>
+      <circle cx="366.994" cy="217.797" r="6.13057" transform="rotate(100 366.994 217.797)" fill="currentColor"/>
+      <circle cx="369.367" cy="186.36" r="6.13057" transform="rotate(90 369.367 186.36)" fill="currentColor"/>
+      <circle cx="366.246" cy="154.988" r="6.13057" transform="rotate(80 366.246 154.988)" fill="currentColor"/>
+      <circle cx="357.724" cy="124.635" r="6.13057" transform="rotate(70 357.724 124.635)" fill="currentColor"/>
+      <circle cx="344.06" cy="96.2232" r="6.13057" transform="rotate(60 344.06 96.2232)" fill="currentColor"/>
+      <circle cx="325.671" cy="70.6145" r="6.13057" transform="rotate(50 325.671 70.6145)" fill="currentColor"/>
+      <circle cx="303.114" cy="48.5891" r="6.13057" transform="rotate(40 303.114 48.5891)" fill="currentColor"/>
+      <circle cx="277.075" cy="30.8149" r="6.13057" transform="rotate(30 277.075 30.8149)" fill="currentColor"/>
+      <circle cx="248.345" cy="17.8327" r="6.13057" transform="rotate(20 248.345 17.8327)" fill="currentColor"/>
+      <circle cx="217.797" cy="10.0366" r="6.13057" transform="rotate(10 217.797 10.0366)" fill="currentColor"/>
+      <circle cx="186.36" cy="7.66329" r="6.13057" fill="currentColor"/>
     </svg>
   )
 }

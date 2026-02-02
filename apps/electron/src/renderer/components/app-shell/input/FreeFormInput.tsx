@@ -58,7 +58,7 @@ import { useOptionalAppShellContext } from '@/context/AppShellContext'
 import { EditPopover, getEditConfig } from '@/components/ui/EditPopover'
 import { SourceAvatar } from '@/components/ui/source-avatar'
 import { FreeFormInputContextBadge } from './FreeFormInputContextBadge'
-import type { FileAttachment, LoadedSource, LoadedSkill } from '../../../../shared/types'
+import type { FileAttachment, LoadedSource, LoadedSkill, StoredAttachment } from '../../../../shared/types'
 import type { PermissionMode } from '@craft-agent/shared/agent/modes'
 import { PERMISSION_MODE_ORDER } from '@craft-agent/shared/agent/modes'
 import { type ThinkingLevel, THINKING_LEVELS, getThinkingLevelName } from '@craft-agent/shared/agent/thinking-levels'
@@ -433,13 +433,14 @@ export function FreeFormInput({
       planPath?: string
       workingDirectory?: string
       permissionMode?: PermissionMode
+      attachments?: StoredAttachment[]
     }>) => {
       // Only handle if this event is for our session
       if (e.detail?.sessionId && e.detail.sessionId !== sessionId) {
         return
       }
 
-      const { planPath, workingDirectory, permissionMode } = e.detail
+      const { planPath, workingDirectory, permissionMode, attachments } = e.detail
 
       if (!planPath) {
         console.warn('[FreeFormInput] Accept in New Chat: No plan path provided')
@@ -450,6 +451,7 @@ export function FreeFormInput({
       // Use 'allow-all' mode since we're executing a pre-approved plan
       // Pass fromPlanSessionId to link back to the original session
       // Pass pendingTitleFromPlan so title is generated from plan content (not the generic "Read the plan..." message)
+      // Pass attachments so they're carried over to the new session
       navigate(routes.action.newChat({
         input: `Read the plan at ${planPath} and execute it.`,
         send: true,
@@ -457,6 +459,7 @@ export function FreeFormInput({
         workdir: workingDirectory,
         fromPlanSessionId: sessionId,
         pendingTitleFromPlan: planPath,
+        attachments: attachments?.length ? JSON.stringify(attachments) : undefined,
       }))
     }
 

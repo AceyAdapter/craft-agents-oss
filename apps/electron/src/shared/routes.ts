@@ -45,8 +45,9 @@ export const routes = {
      * @param workdir - Optional working directory path
      * @param fromPlanSessionId - Optional session ID where the plan originated (for "Accept in New Chat" linking)
      * @param pendingTitleFromPlan - Optional plan path for deferred title generation from plan content
+     * @param attachments - Optional JSON-encoded StoredAttachment[] from original session
      */
-    newChat: (params?: { input?: string; name?: string; send?: boolean; status?: string; label?: string; mode?: string; workdir?: string; fromPlanSessionId?: string; pendingTitleFromPlan?: string }) =>
+    newChat: (params?: { input?: string; name?: string; send?: boolean; status?: string; label?: string; mode?: string; workdir?: string; fromPlanSessionId?: string; pendingTitleFromPlan?: string; attachments?: string }) =>
       `action/new-chat${toQueryString(params ? { ...params, send: params.send ? 'true' : undefined } : undefined)}` as const,
 
     /** Rename a session */

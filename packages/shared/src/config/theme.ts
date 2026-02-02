@@ -29,6 +29,7 @@ export interface ThemeColors {
   info?: CSSColor; // Amber (Ask mode, warnings)
   success?: CSSColor; // Green
   destructive?: CSSColor; // Red
+  statusGlyph?: CSSColor; // Checkmark/X inside filled status icons
 }
 
 /**
@@ -81,6 +82,7 @@ const COLOR_KEYS: (keyof ThemeColors)[] = [
   'info',
   'success',
   'destructive',
+  'statusGlyph',
 ];
 
 const SURFACE_KEYS: (keyof SurfaceColors)[] = [
@@ -204,6 +206,7 @@ export function themeToCSS(theme: ThemeOverrides, isDark: boolean = false): stri
   if (colors.info) vars.push(`--info: ${colors.info};`);
   if (colors.success) vars.push(`--success: ${colors.success};`);
   if (colors.destructive) vars.push(`--destructive: ${colors.destructive};`);
+  if (colors.statusGlyph) vars.push(`--status-glyph: ${colors.statusGlyph};`);
 
   // Surface color variables (fall back to background if not set)
   // These enable fine-grained control over specific UI regions
